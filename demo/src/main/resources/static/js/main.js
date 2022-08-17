@@ -8,9 +8,18 @@ addEventListener('load', () => {
         animation: false,
         timeline: false,
     });
+    const buildingTileset = viewer.scene.primitives.add(
+        Cesium.createOsmBuildings()
+    );
+
+    const destination = Cesium.Cartesian3.fromDegrees(
+        126.74345,
+        37.66017,
+        2200
+    );
 
     viewer.camera.flyTo({
-        destination: Cesium.Cartesian3.fromDegrees(126.74345, 37.66017, 400),
+        destination: destination,
     });
 
     const cartographic = new Cesium.Cartographic();
@@ -42,34 +51,23 @@ addEventListener('load', () => {
             ' km';
     });
 
-    function setZoomIn() {
-        ellipsoid.cartesianToCartographic(camera.position, cartographic); //제공된 데카르트를 지도 제작 표현으로 변환 , 데카르트 위치, 저장될 매개체
-        if (cartographic.height > 300) {
-            console.log(cartographic.height);
-            cartographic.height -= 300; // convert to meters
-        }
-
-        ellipsoid.cartographicToCartesian(cartographic, cartesian); // 지도제작을 데카르트 위치로 변환, 지도제작위치 ,저장된 매개체
-        camera.position = cartesian;
-    }
-
-    function setZoomOut() {
-        ellipsoid.cartesianToCartographic(camera.position, cartographic);
-        if (cartographic.height < 2000) {
-            console.log(cartographic.height);
-            cartographic.height += 300; // convert to meters
-        }
-        ellipsoid.cartographicToCartesian(cartographic, cartesian);
-        camera.position = cartesian;
-    }
-
     const zoomIn = document.querySelector('.zoom-in');
     zoomIn.addEventListener('click', () => {
-        setZoomIn();
+        camera.zoomIn(500);
     });
 
     const zoomOut = document.querySelector('.zoom-out');
     zoomOut.addEventListener('click', () => {
-        setZoomOut();
+        camera.zoomOut(500);
+    });
+
+    const rotateLeft = document.querySelector('.rotate-left');
+    rotateLeft.addEventListener('click', () => {
+        camera.rotate(destination, 90);
+    });
+
+    const rotateRight = document.querySelector('.rotate-right');
+    rotateRight.addEventListener('click', () => {
+        camera.rotate(destination, -90);
     });
 });
