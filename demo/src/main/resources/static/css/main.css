@@ -1,4 +1,4 @@
-#slider {
+.slider.on {
     position: absolute;
     left: 50%;
     top: 0px;
@@ -6,9 +6,9 @@
     width: 5px;
     height: 100%;
     z-index: 9999;
-    display: none;
+    display: block;
 }
 
-#slider:hover {
+.slider.on:hover {
     cursor: ew-resize;
 }
