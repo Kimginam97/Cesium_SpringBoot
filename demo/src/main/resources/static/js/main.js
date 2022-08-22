@@ -8,6 +8,11 @@ addEventListener('load', () => {
         animation: false,
         timeline: false,
     });
+    const scene = viewer.scene;
+    const canvas = viewer.canvas;
+    const camera = viewer.scene.camera;
+    const layers = viewer.imageryLayers;
+    const ellipsoid = scene.globe.ellipsoid;
 
     const buildingTileset = viewer.scene.primitives.add(
         Cesium.createOsmBuildings()
@@ -19,7 +24,12 @@ addEventListener('load', () => {
         2200
     );
 
-    const camera = viewer.scene.camera;
+    const leftRightDivisionBtn = document.querySelector('.left-right_division');
+    const slider = document.querySelector('.slider');
+    const kakaoImg = document.querySelector('.kakaoimg');
+    const sliderHandler = new Cesium.ScreenSpaceEventHandler(slider);
+    const keyBoardBtn = document.querySelector('.keyboard');
+
     viewer.camera.flyTo({
         destination: destination,
     });
@@ -49,12 +59,6 @@ addEventListener('load', () => {
     });
 
     // 좌우화면 분할
-    const layers = viewer.imageryLayers;
-    const leftRightDivisionBtn = document.querySelector('.left-right_division');
-    const slider = document.querySelector('.slider');
-    const kakaoImg = document.querySelector('.kakaoimg');
-    const sliderHandler = new Cesium.ScreenSpaceEventHandler(slider);
-
     leftRightDivisionBtn.addEventListener('click', onSlider);
     kakaoImg.addEventListener('click', () => {
         const earthAtNight = layers.addImageryProvider(
@@ -66,6 +70,9 @@ addEventListener('load', () => {
             slider.offsetLeft / slider.parentElement.offsetWidth;
     });
 
+    // 키보드 동작하기
+    keyBoardBtn.addEventListener('click', onKeyBoard);
+
     function onSlider() {
         const hasClass = slider.classList.contains('on');
         if (!hasClass) {
@@ -74,7 +81,6 @@ addEventListener('load', () => {
         } else {
             slider.classList.remove('on');
             layers.removeAll();
-            console.log(layers);
         }
     }
 
@@ -111,5 +117,97 @@ addEventListener('load', () => {
         sliderHandler.setInputAction(function () {
             moveActive = false;
         }, Cesium.ScreenSpaceEventType.PINCH_END);
+    }
+
+    function onKeyBoard() {
+        const hasClass = keyBoardBtn.classList.contains('on');
+        if (!hasClass) {
+            keyBoardBtn.classList.add('on');
+            keyBoardHandler();
+        } else {
+            keyBoardBtn.classList.remove('on');
+        }
+    }
+
+    function keyBoardHandler() {
+        canvas.onclick = function () {
+            canvas.focus();
+        };
+        const flags = {
+            moveForward: false,
+            moveBackward: false,
+            moveUp: false,
+            moveDown: false,
+            moveLeft: false,
+            moveRight: false,
+        };
+
+        document.addEventListener(
+            'keydown',
+            function (e) {
+                const flagName = getFlagForKeyCode(e.keyCode);
+                if (typeof flagName !== 'undefined') {
+                    flags[flagName] = true;
+                }
+            },
+            false
+        );
+
+        document.addEventListener(
+            'keyup',
+            function (e) {
+                const flagName = getFlagForKeyCode(e.keyCode);
+                if (typeof flagName !== 'undefined') {
+                    flags[flagName] = false;
+                }
+            },
+            false
+        );
+
+        viewer.clock.onTick.addEventListener(function (clock) {
+            // Change movement speed based on the distance of the camera to the surface of the ellipsoid.
+            const cameraHeight = ellipsoid.cartesianToCartographic(
+                camera.position
+            ).height;
+            const moveRate = cameraHeight / 100.0;
+
+            if (flags.moveForward) {
+                camera.moveForward(moveRate);
+            }
+            if (flags.moveBackward) {
+                camera.moveBackward(moveRate);
+            }
+            if (flags.moveUp) {
+                camera.moveUp(moveRate);
+            }
+            if (flags.moveDown) {
+                camera.moveDown(moveRate);
+            }
+            if (flags.moveLeft) {
+                camera.moveLeft(moveRate);
+            }
+            if (flags.moveRight) {
+                camera.moveRight(moveRate);
+            }
+        });
+    }
+
+    function getFlagForKeyCode(keyCode) {
+        switch (keyCode) {
+            case 'W'.charCodeAt(0):
+                return 'moveForward';
+            case 'S'.charCodeAt(0):
+                return 'moveBackward';
+            case 'Q'.charCodeAt(0):
+                return 'moveUp';
+            case 'E'.charCodeAt(0):
+                return 'moveDown';
+            case 'D'.charCodeAt(0):
+                return 'moveRight';
+            case 'A'.charCodeAt(0):
+                return 'moveLeft';
+            default:
+                return undefined;
+        }
     }
 });
