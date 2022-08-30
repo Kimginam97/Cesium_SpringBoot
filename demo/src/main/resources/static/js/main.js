@@ -232,6 +232,7 @@ addEventListener('load', () => {
         }
         // Drawing mode. Initially only line is supported
         let drawingMode = event.target.value;
+        viewer.entities.removeAll();
         function drawShape(positionData) {
             let shape;
             if (drawingMode === 'line') {
