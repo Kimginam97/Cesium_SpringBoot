@@ -24,6 +24,8 @@ addEventListener('load', () => {
         2200
     );
 
+    const handler = new Cesium.ScreenSpaceEventHandler(viewer.canvas);
+
     const leftRightDivisionBtn = document.querySelector('.left-right_division');
     const slider = document.querySelector('.slider');
     const kakaoImg = document.querySelector('.kakaoimg');
@@ -210,4 +212,109 @@ addEventListener('load', () => {
                 return undefined;
         }
     }
+
+    const makeLinePg = document.querySelector('#linepgbutton');
+    makeLinePg.addEventListener('click', (event) => {
+        function createPoint(clickPosition) {
+            if (event.target.value === 'null') {
+                return;
+            }
+            const point = viewer.entities.add({
+                position: clickPosition,
+                point: {
+                    show: true,
+                    color: Cesium.Color.Yellow,
+                    pixelSize: 7,
+                    heightReference: Cesium.HeightReference.CLAMP_TO_GROUND, // 위치가 지형에 고정
+                },
+            });
+            return point;
+        }
+        // Drawing mode. Initially only line is supported
+        let drawingMode = event.target.value;
+        function drawShape(positionData) {
+            let shape;
+            if (drawingMode === 'line') {
+                shape = viewer.entities.add({
+                    polyline: {
+                        positions: positionData,
+                        clampToGround: true,
+                        width: 3,
+                    },
+                });
+            } else if (drawingMode === 'polygon') {
+                shape = viewer.entities.add({
+                    polygon: {
+                        hierarchy: positionData,
+                        material: new Cesium.ColorMaterialProperty(
+                            Cesium.Color.WHITE.withAlpha(0.7)
+                        ),
+                    },
+                });
+            }
+            return shape;
+        }
+
+        let activeShapePoints = [];
+        let activeShape;
+        let floatingPoint;
+
+        // 마우스 왼쪽 클릭시 shape 그리기
+        handler.setInputAction(function (event) {
+            // We use `viewer.scene.pickPosition` here instead of `viewer.camera.pickEllipsoid` so that
+            // we get the correct point when mousing over terrain.
+            const earthPosition = viewer.camera.pickEllipsoid(event.position);
+            // `earthPosition` will be undefined if our mouse is not over the globe.
+            if (Cesium.defined(earthPosition)) {
+                if (activeShapePoints.length === 0) {
+                    floatingPoint = createPoint(earthPosition);
+                    activeShapePoints.push(earthPosition);
+                    const dynamicPositions = new Cesium.CallbackProperty(
+                        function () {
+                            if (drawingMode === 'polygon') {
+                                return new Cesium.PolygonHierarchy(
+                                    activeShapePoints
+                                );
+                            }
+                            return activeShapePoints;
+                        },
+                        false
+                    );
+                    activeShape = drawShape(dynamicPositions);
+                }
+                activeShapePoints.push(earthPosition);
+                createPoint(earthPosition);
+            }
+        }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+        // 마우스 이동시 그림
+        handler.setInputAction(function (event) {
+            if (Cesium.defined(floatingPoint)) {
+                const newPosition = viewer.camera.pickEllipsoid(
+                    event.endPosition
+                );
+                if (Cesium.defined(newPosition)) {
+                    floatingPoint.position.setValue(newPosition);
+                    activeShapePoints.pop();
+                    activeShapePoints.push(newPosition);
+                }
+            }
+        }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+
+        // Redraw the shape so it's not dynamic and remove the dynamic shape.
+        function terminateShape() {
+            activeShapePoints.pop();
+            drawShape(activeShapePoints);
+            viewer.entities.remove(floatingPoint);
+            viewer.entities.remove(activeShape);
+            floatingPoint = undefined;
+            activeShape = undefined;
+            activeShapePoints = [];
+        }
+
+        // 마우스 오른쪽 클릭시 그리기 종료
+        handler.setInputAction(function (event) {
+            terminateShape();
+        }, Cesium.ScreenSpaceEventType.RIGHT_CLICK);
+    });
 });
