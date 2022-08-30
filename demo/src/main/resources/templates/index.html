@@ -10,9 +10,6 @@
   <th:block th:replace="fragments/header :: mainHead"> </th:block>
 </head>
 <body>
-  <div id="cesiumContainer" class="fullSize">
-    <div id="slider" class="slider"></div>
-  </div>
   <input type="button" class="zoom-in" value="Zoom-in"></input>
   <input type="button" class="zoom-out" value="Zoom-out"></input>
   <input type="button" class="rotate-left" value="rotate-left"></input>
@@ -25,5 +22,8 @@
     <option value="polygon">다각형</option>
     <option value="null" selected>없음</option>
   </select>
+  <div id="cesiumContainer" class="fullSize">
+    <div id="slider" class="slider"></div>
+  </div>
 </body>
 </html>
