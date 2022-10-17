@@ -1,79 +1,57 @@
-addEventListener('load', () => {
-    window.CESIUM_BASE_URL = '/js/libs/cesium/';
-    Cesium.Ion.defaultAccessToken =
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJmMTQ2MWFmOS1lOTJhLTQzN2MtODFlOC05NjVhZjI0ZWMwM2EiLCJpZCI6ODk3MDcsImlhdCI6MTY0OTg5NDY4MX0.p4EnzJhcoPuVPLa9mL1GiVWNoxqv_YU6Npp9LzMwEjE';
+const zoomInBtn = document.querySelector('.zoom-in');
+const zoomOutBtn = document.querySelector('.zoom-out');
+const rotateLeftBtn = document.querySelector('.rotate-left');
+const rotateRightBtn = document.querySelector('.rotate-right');
+const leftRightDivisionBtn = document.querySelector('.left-right_division');
+const slider = document.querySelector('.slider');
+const keyBoardBtn = document.querySelector('.keyboard');
+const makeLinePg = document.querySelector('#linepgbutton');
 
-    const viewer = new Cesium.Viewer('cesiumContainer', {
-        navigationHelpButton: false,
-        animation: false,
-        timeline: false,
-    });
-    const scene = viewer.scene;
-    const canvas = viewer.canvas;
-    const camera = viewer.scene.camera;
-    const layers = viewer.imageryLayers;
-    const ellipsoid = scene.globe.ellipsoid;
-
-    const buildingTileset = viewer.scene.primitives.add(
-        Cesium.createOsmBuildings()
-    );
-
-    const destination = Cesium.Cartesian3.fromDegrees(
-        126.74345,
-        37.66017,
-        2200
-    );
-
+function initContoller(viewer) {
     const handler = new Cesium.ScreenSpaceEventHandler(viewer.canvas);
-
-    const leftRightDivisionBtn = document.querySelector('.left-right_division');
-    const slider = document.querySelector('.slider');
-    const kakaoImg = document.querySelector('.kakaoimg');
     const sliderHandler = new Cesium.ScreenSpaceEventHandler(slider);
-    const keyBoardBtn = document.querySelector('.keyboard');
 
-    viewer.camera.flyTo({
-        destination: destination,
-    });
-
-    // 확대
-    const zoomIn = document.querySelector('.zoom-in');
-    zoomIn.addEventListener('click', () => {
-        camera.zoomIn(700);
-    });
-
-    // 축소
-    const zoomOut = document.querySelector('.zoom-out');
-    zoomOut.addEventListener('click', () => {
-        camera.zoomOut(700);
-    });
-
-    // 왼쪽 회전
-    const rotateLeft = document.querySelector('.rotate-left');
-    rotateLeft.addEventListener('click', () => {
-        camera.rotate(destination, 45);
-    });
-
-    // 오른쪽 회전
-    const rotateRight = document.querySelector('.rotate-right');
-    rotateRight.addEventListener('click', () => {
-        camera.rotate(destination, -45);
-    });
-
-    // 좌우화면 분할
-    leftRightDivisionBtn.addEventListener('click', onSlider);
-    kakaoImg.addEventListener('click', () => {
-        const earthAtNight = layers.addImageryProvider(
-            new Cesium.IonImageryProvider({ assetId: 4 })
+    const zoomControls = (zoomValue) => {
+        const windowPosition = new Cesium.Cartesian2(
+            viewer.container.clientWidth / 2,
+            viewer.container.clientHeight / 2
         );
-        earthAtNight.splitDirection = Cesium.SplitDirection.LEFT; // Only show to the left of the slider.
-        // Sync the position of the slider with the split position
-        viewer.scene.splitPosition =
-            slider.offsetLeft / slider.parentElement.offsetWidth;
-    });
+        const pickRay = viewer.scene.camera.getPickRay(windowPosition);
+        const pickPosition = viewer.scene.globe.pick(pickRay, viewer.scene);
+        const cameraPosition = viewer.scene.camera.position;
+        const currentHeading = viewer.camera.heading;
+        const currentPitch = viewer.camera.pitch;
 
-    // 키보드 동작하기
-    keyBoardBtn.addEventListener('click', onKeyBoard);
+        const center = new Cesium.BoundingSphere(pickPosition, 0);
+
+        const distanceScreen = parseInt(
+            Cesium.Cartesian3.distance(pickPosition, cameraPosition)
+        );
+
+        let zoomRange = parseInt(distanceScreen - zoomValue);
+        if (zoomRange <= 100) {
+            zoomRange = 100;
+        } else if (zoomRange >= 10000) {
+            zoomRange = 10000;
+        }
+
+        viewer.scene.camera.flyToBoundingSphere(center, {
+            duration: 0,
+            offset: {
+                heading: currentHeading,
+                pitch: currentPitch,
+                range: zoomRange,
+            },
+        });
+    };
+
+    const zoomIn = () => {
+        zoomControls(700);
+    };
+
+    const zoomOut = () => {
+        zoomControls(-700);
+    };
 
     function onSlider() {
         const hasClass = slider.classList.contains('on');
@@ -82,7 +60,6 @@ addEventListener('load', () => {
             sliderEventHandler();
         } else {
             slider.classList.remove('on');
-            layers.removeAll();
         }
     }
 
@@ -109,10 +86,6 @@ addEventListener('load', () => {
             move,
             Cesium.ScreenSpaceEventType.MOUSE_MOVE
         );
-        sliderHandler.setInputAction(
-            move,
-            Cesium.ScreenSpaceEventType.PINCH_MOVE
-        );
         sliderHandler.setInputAction(function () {
             moveActive = false;
         }, Cesium.ScreenSpaceEventType.LEFT_UP);
@@ -132,8 +105,8 @@ addEventListener('load', () => {
     }
 
     function keyBoardHandler() {
-        canvas.onclick = function () {
-            canvas.focus();
+        viewer.canvas.onclick = function () {
+            viewer.canvas.focus();
         };
         const flags = {
             moveForward: false,
@@ -168,28 +141,29 @@ addEventListener('load', () => {
 
         viewer.clock.onTick.addEventListener(function (clock) {
             // Change movement speed based on the distance of the camera to the surface of the ellipsoid.
-            const cameraHeight = ellipsoid.cartesianToCartographic(
-                camera.position
-            ).height;
-            const moveRate = cameraHeight / 100.0;
+            const cameraHeight =
+                viewer.scene.globe.ellipsoid.cartesianToCartographic(
+                    viewer.camera.position
+                ).height;
+            const moveRate = cameraHeight / 50.0;
 
             if (flags.moveForward) {
-                camera.moveForward(moveRate);
+                viewer.camera.moveForward(moveRate);
             }
             if (flags.moveBackward) {
-                camera.moveBackward(moveRate);
+                viewer.camera.moveBackward(moveRate);
             }
             if (flags.moveUp) {
-                camera.moveUp(moveRate);
+                viewer.camera.moveUp(moveRate);
             }
             if (flags.moveDown) {
-                camera.moveDown(moveRate);
+                viewer.camera.moveDown(moveRate);
             }
             if (flags.moveLeft) {
-                camera.moveLeft(moveRate);
+                viewer.camera.moveLeft(moveRate);
             }
             if (flags.moveRight) {
-                camera.moveRight(moveRate);
+                viewer.camera.moveRight(moveRate);
             }
         });
     }
@@ -213,7 +187,6 @@ addEventListener('load', () => {
         }
     }
 
-    const makeLinePg = document.querySelector('#linepgbutton');
     makeLinePg.addEventListener('click', (event) => {
         function createPoint(clickPosition) {
             if (event.target.value === 'null') {
@@ -260,12 +233,8 @@ addEventListener('load', () => {
         let activeShape;
         let floatingPoint;
 
-        // 마우스 왼쪽 클릭시 shape 그리기
         handler.setInputAction(function (event) {
-            // We use `viewer.scene.pickPosition` here instead of `viewer.camera.pickEllipsoid` so that
-            // we get the correct point when mousing over terrain.
             const earthPosition = viewer.camera.pickEllipsoid(event.position);
-            // `earthPosition` will be undefined if our mouse is not over the globe.
             if (Cesium.defined(earthPosition)) {
                 if (activeShapePoints.length === 0) {
                     floatingPoint = createPoint(earthPosition);
@@ -288,7 +257,6 @@ addEventListener('load', () => {
             }
         }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
-        // 마우스 이동시 그림
         handler.setInputAction(function (event) {
             if (Cesium.defined(floatingPoint)) {
                 const newPosition = viewer.camera.pickEllipsoid(
@@ -302,7 +270,6 @@ addEventListener('load', () => {
             }
         }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
 
-        // Redraw the shape so it's not dynamic and remove the dynamic shape.
         function terminateShape() {
             activeShapePoints.pop();
             drawShape(activeShapePoints);
@@ -318,4 +285,9 @@ addEventListener('load', () => {
             terminateShape();
         }, Cesium.ScreenSpaceEventType.RIGHT_CLICK);
     });
-});
+
+    zoomInBtn.addEventListener('click', zoomIn);
+    zoomOutBtn.addEventListener('click', zoomOut);
+    leftRightDivisionBtn.addEventListener('click', onSlider);
+    keyBoardBtn.addEventListener('click', onKeyBoard);
+}
