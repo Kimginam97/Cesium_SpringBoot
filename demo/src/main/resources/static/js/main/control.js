@@ -5,7 +5,7 @@ const rotateRightBtn = document.querySelector('.rotate-right');
 const leftRightDivisionBtn = document.querySelector('.left-right_division');
 const slider = document.querySelector('.slider');
 const keyBoardBtn = document.querySelector('.keyboard');
-const makeLinePg = document.querySelector('#linepgbutton');
+const makeLinePg = document.querySelector('.linepgbutton');
 
 function initContoller(viewer) {
     const handler = new Cesium.ScreenSpaceEventHandler(viewer.canvas);

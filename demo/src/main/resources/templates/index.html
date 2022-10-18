@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html lang="en"
-      xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -9,12 +9,13 @@
 
   <th:block th:replace="fragments/header :: mainHead"> </th:block>
 </head>
+
 <body>
   <input type="button" class="zoom-in" value="Zoom-in"></input>
   <input type="button" class="zoom-out" value="Zoom-out"></input>
   <input type="button" class="left-right_division" value="left-right_division"></input>
   <input type="button" class="keyboard" value="keyboard"></input>
-  <select name="linepgbutton" id="linepgbutton">
+  <select name="linepgbutton" id="linepgbutton" class="linepgbutton">
     <option value="line">라인</option>
     <option value="polygon">다각형</option>
     <option value="null" selected>없음</option>
@@ -23,4 +24,5 @@
     <div id="slider" class="slider"></div>
   </div>
 </body>
+
 </html>
