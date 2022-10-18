@@ -10,43 +10,42 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
-
-
+import java.net.URLEncoder;
 
 @Controller
 public class apiSampleJSONController {
 
 	@GetMapping("/sample/getAddrApi.do")
-    public String addrFormView(){
-        return "sample/apiSampleApplicationJSON";
-    }
-	
-    @PostMapping("/sample/getAddrApi.do")
-    public void getAddrApi(HttpServletRequest req, ModelMap model, HttpServletResponse response) throws Exception {
-		// 요청변수 설정
-		String admCd = req.getParameter("admCd");
-		String rnMgtSn = req.getParameter("rnMgtSn");
-		String udrtYn = req.getParameter("udrtYn");
-		String buldMnnm = req.getParameter("buldMnnm");
-		String buldSlno = req.getParameter("buldSlno");
-		String confmKey = req.getParameter("confmKey");
-		String resultType = req.getParameter("resultType"); // 요청 변수 설정 (검색결과형식 설정, json)
-  	
-		// OPEN API 호출 URL 정보 설정
-		String apiUrl = "https://business.juso.go.kr/addrlink/addrCoordApi.do?admCd ="+admCd+"&rnMgtSn="+rnMgtSn+"&udrtYn="+udrtYn+"&buldMnnm="+buldMnnm+"&buldSlno="+buldSlno+"&confmKey="+confmKey+"&resultType="+resultType;
-		URL url = new URL(apiUrl);
-    	BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream(),"UTF-8"));
-    	StringBuffer sb = new StringBuffer();
-    	String tempStr = null;
+	public String addrFormView() {
+		return "sample/apiSampleApplicationJSON";
+	}
 
-    	while(true){
-    		tempStr = br.readLine();
-    		if(tempStr == null) break;
-    		sb.append(tempStr);								// 응답결과 JSON 저장
-    	}
-    	br.close();
-    	response.setCharacterEncoding("UTF-8");
+	@PostMapping("/sample/getAddrApi.do")
+	public void getAddrApi(HttpServletRequest req, ModelMap model, HttpServletResponse response) throws Exception {
+		// 요청변수 설정
+		String currentPage = req.getParameter("currentPage"); // 요청 변수 설정 (현재 페이지. currentPage : n > 0)
+		String countPerPage = req.getParameter("countPerPage"); // 요청 변수 설정 (페이지당 출력 개수. countPerPage 범위 : 0 < n <= 100)
+		String resultType = req.getParameter("resultType"); // 요청 변수 설정 (검색결과형식 설정, json)
+		String confmKey = req.getParameter("confmKey"); // 요청 변수 설정 (승인키)
+		String keyword = req.getParameter("keyword"); // 요청 변수 설정 (키워드)
+		// OPEN API 호출 URL 정보 설정
+		String apiUrl = "https://business.juso.go.kr/addrlink/addrLinkApi.do?currentPage=" + currentPage
+				+ "&countPerPage=" + countPerPage + "&keyword=" + URLEncoder.encode(keyword, "UTF-8") + "&confmKey="
+				+ confmKey + "&resultType=" + resultType;
+		URL url = new URL(apiUrl);
+		BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"));
+		StringBuffer sb = new StringBuffer();
+		String tempStr = null;
+
+		while (true) {
+			tempStr = br.readLine();
+			if (tempStr == null)
+				break;
+			sb.append(tempStr); // 응답결과 JSON 저장
+		}
+		br.close();
+		response.setCharacterEncoding("UTF-8");
 		response.setContentType("text/xml");
-		response.getWriter().write(sb.toString());			// 응답결과 반환
-    }
+		response.getWriter().write(sb.toString()); // 응답결과 반환
+	}
 }

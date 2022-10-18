@@ -13,63 +13,122 @@
 
 <body>
     <form name="form" id="form" method="post">
-        <input type="text" name="confmKey" value="TESTJUSOGOKR" /><!-- 요청 변수 설정 (승인키) -->
+        <input type="text" name="currentPage" value="1" /> <!-- 요청 변수 설정 (현재 페이지. currentPage : n > 0) -->
+        <input type="text" name="countPerPage" value="10" />
+        <!-- 요청 변수 설정 (페이지당 출력 개수. countPerPage 범위 : 0 < n <= 100) -->
         <input type="text" name="resultType" value="json" /> <!-- 요청 변수 설정 (검색결과형식 설정, json) -->
-        <input type="text" name="admCd" value="1144012700" /> <!-- 요청 변수 설정 (행정구역코드) -->
-        <input type="text" name="rnMgtSn" value="114403113012" /><!-- 요청 변수 설정 (도로명코드) -->
-        <input type="text" name="udrtYn" value="0" /> <!-- 요청 변수 설정 (지하여부) -->
-        <input type="text" name="buldMnnm" value="301" /><!-- 요청 변수 설정 (건물본번) -->
-        <input type="text" name="buldSlno" value="0" /><!-- 요청 변수 설정 (건물부번) -->
-        <input type="button" onClick="getAddr();" value="좌표검색하기" />
+        <input type="text" name="confmKey" id="confmKey" style="width:250px;display:none"
+            value="devU01TX0FVVEgyMDIyMTAxODExMDAwMDExMzEwMDk=" />
+        <!-- 요청 변수 설정 (승인키) -->
+        <input type="text" name="keyword" value="" onkeydown="enterSearch();" /><!-- 요청 변수 설정 (키워드) -->
+        <input type="button" onClick="getAddrLoc();" value="주소검색하기" />
         <div id="list"></div><!-- 검색 결과 리스트 출력 영역 -->
     </form>
 
     <script language="javascript">
-        function getAddr() {
-            // AJAX 좌표 검색 요청
+        function getAddrLoc() {
+            // 적용예 (api 호출 전에 검색어 체크) 	
+            if (!checkSearchedWord(document.form.keyword)) {
+                return;
+            }
+
             $.ajax({
-                url: "https://business.juso.go.kr/addrlink/addrCoordApiJsonp.do"	// 좌표검색 OPEN API URL
+                url: "/sample/getAddrApi.do"
                 , type: "post"
-                , data: $("#form").serialize() 								// 요청 변수 설정
-                , dataType: "jsonp"											// 크로스도메인으로 인한 jsonp 이용, 검색결과형식 JSON 
-                , crossDomain: true
-                , success: function (jsonStr) {									// jsonStr : 주소 검색 결과 JSON 데이터			
-                    $("#list").html("");									// 결과 출력 영역 초기화
+                , data: $("#form").serialize()
+                , dataType: "json"
+                , success: function (jsonStr) {
+                    $("#list").html("");
                     var errCode = jsonStr.results.common.errorCode;
                     var errDesc = jsonStr.results.common.errorMessage;
                     if (errCode != "0") {
                         alert(errCode + "=" + errDesc);
                     } else {
                         if (jsonStr != null) {
-                            makeListJson(jsonStr);							// 결과 JSON 데이터 파싱 및 출력
+                            makeListJson(jsonStr);
                         }
                     }
                 }
                 , error: function (xhr, status, error) {
-                    alert("에러발생");										// AJAX 호출 에러
+                    alert("에러발생");
                 }
             });
         }
+
         function makeListJson(jsonStr) {
             var htmlStr = "";
             htmlStr += "<table>";
-            // jquery를 이용한 JSON 결과 데이터 파싱
             $(jsonStr.results.juso).each(function () {
                 htmlStr += "<tr>";
+                htmlStr += "<td>" + this.roadAddr + "</td>";
+                htmlStr += "<td>" + this.roadAddrPart1 + "</td>";
+                htmlStr += "<td>" + this.roadAddrPart2 + "</td>";
+                htmlStr += "<td>" + this.jibunAddr + "</td>";
+                htmlStr += "<td>" + this.engAddr + "</td>";
+                htmlStr += "<td>" + this.zipNo + "</td>";
                 htmlStr += "<td>" + this.admCd + "</td>";
                 htmlStr += "<td>" + this.rnMgtSn + "</td>";
+                htmlStr += "<td>" + this.bdMgtSn + "</td>";
+                htmlStr += "<td>" + this.detBdNmList + "</td>";
+                /** API 서비스 제공항목 확대 (2017.02) **/
+                htmlStr += "<td>" + this.bdNm + "</td>";
+                htmlStr += "<td>" + this.bdKdcd + "</td>";
+                htmlStr += "<td>" + this.siNm + "</td>";
+                htmlStr += "<td>" + this.sggNm + "</td>";
+                htmlStr += "<td>" + this.emdNm + "</td>";
+                htmlStr += "<td>" + this.liNm + "</td>";
+                htmlStr += "<td>" + this.rn + "</td>";
                 htmlStr += "<td>" + this.udrtYn + "</td>";
                 htmlStr += "<td>" + this.buldMnnm + "</td>";
                 htmlStr += "<td>" + this.buldSlno + "</td>";
-                htmlStr += "<td>" + this.bdMgtSn + "</td>";
-                htmlStr += "<td>" + this.entX + "</td>";
-                htmlStr += "<td>" + this.entY + "</td>";
-                htmlStr += "<td>" + this.bdNm + "</td>";
+                htmlStr += "<td>" + this.mtYn + "</td>";
+                htmlStr += "<td>" + this.lnbrMnnm + "</td>";
+                htmlStr += "<td>" + this.lnbrSlno + "</td>";
+                htmlStr += "<td>" + this.emdNo + "</td>";
                 htmlStr += "</tr>";
             });
             htmlStr += "</table>";
-            // 결과 HTML을 FORM의 결과 출력 DIV에 삽입
             $("#list").html(htmlStr);
+        }
+
+        //특수문자, 특정문자열(sql예약어의 앞뒤공백포함) 제거
+        function checkSearchedWord(obj) {
+            if (obj.value.length > 0) {
+                //특수문자 제거
+                var expText = /[%=><]/;
+                if (expText.test(obj.value) == true) {
+                    alert("특수문자를 입력 할수 없습니다.");
+                    obj.value = obj.value.split(expText).join("");
+                    return false;
+                }
+
+                //특정문자열(sql예약어의 앞뒤공백포함) 제거
+                var sqlArray = new Array(
+                    //sql 예약어
+                    "OR", "SELECT", "INSERT", "DELETE", "UPDATE", "CREATE", "DROP", "EXEC",
+                    "UNION", "FETCH", "DECLARE", "TRUNCATE"
+                );
+
+                var regex;
+                for (var i = 0; i < sqlArray.length; i++) {
+                    regex = new RegExp(sqlArray[i], "gi");
+
+                    if (regex.test(obj.value)) {
+                        alert("\"" + sqlArray[i] + "\"와(과) 같은 특정문자로 검색할 수 없습니다.");
+                        obj.value = obj.value.replace(regex, "");
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        function enterSearch() {
+            var evt_code = (window.netscape) ? ev.which : event.keyCode;
+            if (evt_code == 13) {
+                event.keyCode = 0;
+                getAddrLoc();
+            }
         }
     </script>
 </body>
