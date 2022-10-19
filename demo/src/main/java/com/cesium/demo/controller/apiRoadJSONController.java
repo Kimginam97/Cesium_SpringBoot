@@ -13,15 +13,15 @@ import java.net.URL;
 import java.net.URLEncoder;
 
 @Controller
-public class apiSampleJSONController {
+public class apiRoadJSONController {
 
-	@GetMapping("/sample/getAddrApi.do")
+	@GetMapping("/sample/getRoadAddrApi.do")
 	public String addrFormView() {
-		return "sample/apiSampleApplicationJSON";
+		return "sample/apiRoadApplicationJSON";
 	}
 
-	@PostMapping("/sample/getAddrApi.do")
-	public void getAddrApi(HttpServletRequest req, ModelMap model, HttpServletResponse response) throws Exception {
+	@PostMapping("/sample/getRoadAddrApi.do")
+	public void getRoadAddrApi(HttpServletRequest req, ModelMap model, HttpServletResponse response) throws Exception {
 		// 요청변수 설정
 		String currentPage = req.getParameter("currentPage"); // 요청 변수 설정 (현재 페이지. currentPage : n > 0)
 		String countPerPage = req.getParameter("countPerPage"); // 요청 변수 설정 (페이지당 출력 개수. countPerPage 범위 : 0 < n <= 100)
