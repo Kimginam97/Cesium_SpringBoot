@@ -12,7 +12,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 
 @Controller
-public class apiCoordJSONController {
+public class ApiCoordJSONController {
 
 	@GetMapping("/sample/getCoordAddrApi.do")
 	public String coordAddrFormView() {

@@ -13,7 +13,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 
 @Controller
-public class apiRoadJSONController {
+public class ApiRoadJSONController {
 
 	@GetMapping("/sample/getRoadAddrApi.do")
 	public String addrFormView() {
