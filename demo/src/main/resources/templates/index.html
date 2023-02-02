@@ -1,28 +1,10 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-
-  <th:block th:replace="fragments/header :: mainHead"> </th:block>
-</head>
+<head th:replace="fragments/header :: head"></head>
 
 <body>
-  <input type="button" class="zoom-in" value="Zoom-in"></input>
-  <input type="button" class="zoom-out" value="Zoom-out"></input>
-  <input type="button" class="left-right_division" value="left-right_division"></input>
-  <input type="button" class="keyboard" value="keyboard"></input>
-  <select name="linepgbutton" id="linepgbutton" class="linepgbutton">
-    <option value="line">라인</option>
-    <option value="polygon">다각형</option>
-    <option value="null" selected>없음</option>
-  </select>
-  <div id="cesiumContainer" class="fullSize">
-    <div id="slider" class="slider"></div>
-  </div>
+  <div id="cesiumContainer"></div>
 </body>
 
 </html>

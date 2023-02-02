@@ -7,18 +7,3 @@ body,
     padding: 0;
     overflow: hidden;
 }
-
-.slider.on {
-    position: absolute;
-    left: 50%;
-    top: 0px;
-    background-color: #d3d3d3;
-    width: 5px;
-    height: 100%;
-    z-index: 9999;
-    display: block;
-}
-
-.slider.on:hover {
-    cursor: ew-resize;
-}
