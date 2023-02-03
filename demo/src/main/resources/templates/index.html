@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <th:block th:replace="fragments/header :: header"> </th:block>
+</head>
 
-<head th:replace="fragments/header :: head"></head>
 
 <body>
   <div id="cesiumContainer"></div>

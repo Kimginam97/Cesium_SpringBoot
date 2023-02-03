@@ -1,5 +1,10 @@
 function initMap() {
-    const viewer = new Cesium.Viewer('cesiumContainer', {});
+    Cesium.Ion.defaultAccessToken = API_KEY.CESIUM_KEY;
+    const viewer = new Cesium.Viewer('cesiumContainer', {
+        animation: true,   
+        baseLayerPicker: true, 
+        fullscreenButton: true
+    });
 
     viewer.scene.primitives.add(Cesium.createOsmBuildings());
 

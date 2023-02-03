@@ -1,22 +1,24 @@
-<head th:fragment="head">
-    <meta charset="UTF-8">
-    <title>Korea Map</title>
-    <!-- cesium -->
-    <!-- <link rel="stylesheet" href="/js/libs/cesium/Widgets/widgets.css"></link>
-    <script type="text/javascript" th:src="@{/js/libs/cesium/cesium.js}" defer></script> -->
+<th:block th:fragment="header">
+
+    <meta charset="utf-8">
+	<title>Korea Map</title>
 
     <!-- css & js-->
-    <link rel="stylesheet" href="/css/main.css"></link>
+    <link rel="stylesheet" th:href="@{/css/main.css}"/>
     <script type="text/javascript" th:src="@{/js/app.js}" defer></script>
     <script type="text/javascript" th:src="@{/js/main/control.js}" defer></script>
     <script type="text/javascript" th:src="@{/js/pub/jquery-3.6.1.min.js}" defer></script>
 
+    <link rel="stylesheet" th:href="@{/js/libs/cesium/Widgets/widgets.css}"></link>
+    <script type = "text/javascript" th:src="@{/js/libs/cesium/Cesium.js}" defer></script>
+    <script type = "text/javascript" th:src="@{/js/apiKey.js}" defer></script>
+
     <!-- NPM 라이브러리 설치 -->
-    <link rel="stylesheet" href="/node_modules/font-awesome/css/font-awesome.min.css" />
-    <link rel="stylesheet" href="/node_modules/bootstrap/dist/css/bootstrap.min.css" />
-    <script src="/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- <link rel="stylesheet" th:href="@{/node_modules/font-awesome/css/font-awesome.min.css}" />
+    <link rel="stylesheet" th:href="@{/node_modules/bootstrap/dist/css/bootstrap.min.css}" />
+    <script type="text/javascript" th:src="@{/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js}" defer></script>
 
-    <link rel="stylesheet" href="/node_modules/cesium/Build/Cesium/Widgets/widgets.css">
-    <script src="node_modules/cesium/Build/Cesium/Cesium.js"></script>
+    <link rel="stylesheet" th:href="@{/node_modules/cesium/Build/Cesium/Widgets/widgets.css}" />
+    <script type="text/javascript" th:src="@{/node_modules/cesium/Build/Cesium/Cesium.js}" defer></script> -->
 
-    </head>
+</th:block>
